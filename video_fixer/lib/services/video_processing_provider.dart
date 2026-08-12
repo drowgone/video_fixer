@@ -222,10 +222,32 @@ class VideoProcessingProvider extends ChangeNotifier {
         success = await FFmpegRunner.execute(command);
       } else if (isShorts) {
         final targetBitrate = _targetBitrate(inputInfo.bitrate);
-        final videoEncoder = Platform.isAndroid ? 'h264_mediacodec' : 'libx264';
-        final encoderFlags = Platform.isAndroid
-            ? '-b:v $targetBitrate -maxrate $targetBitrate -pix_fmt yuv420p'
-            : '-preset ultrafast -crf 26 -pix_fmt yuv420p';
+
+        String videoEncoder = 'libx264';
+        String encoderFlags = '-preset ultrafast -crf 26 -pix_fmt yuv420p';
+        fallbackCommand = null;
+
+        if (Platform.isAndroid) {
+          videoEncoder = 'h264_mediacodec';
+
+          // Adaptive chipset-level parameter tuning
+          final cpuInfo = await _getAndroidChipsetInfo();
+          final cpuLower = cpuInfo.toLowerCase();
+
+          if (cpuLower.contains('qualcomm') || cpuLower.contains('snapdragon') || cpuLower.contains('sm')) {
+            // Qualcomm Snapdragon: Ultra performance high profile MediaCodec
+            encoderFlags = '-b:v $targetBitrate -maxrate $targetBitrate -pix_fmt yuv420p -profile:v high';
+          } else if (cpuLower.contains('mediatek') || cpuLower.contains('mt6') || cpuLower.contains('helio') || cpuLower.contains('dimensity')) {
+            // MediaTek: Safe buffer size rate-control to prevent stutters
+            encoderFlags = '-b:v $targetBitrate -maxrate $targetBitrate -pix_fmt yuv420p -bufsize ${(targetBitrate ~/ 1000) * 2}k';
+          } else if (cpuLower.contains('exynos') || cpuLower.contains('s5e')) {
+            // Exynos (Samsung): Disable B-frames to bypass hardware threads limitations
+            encoderFlags = '-b:v $targetBitrate -maxrate $targetBitrate -pix_fmt yuv420p -bf 0';
+          } else {
+            // Generic Android MediaCodec
+            encoderFlags = '-b:v $targetBitrate -maxrate $targetBitrate -pix_fmt yuv420p';
+          }
+        }
 
         final videoFilter = isVertical
             ? 'scale=1080:1920:flags=fast_bilinear,fps=30,format=yuv420p'
@@ -419,5 +441,21 @@ class VideoProcessingProvider extends ChangeNotifier {
       if (!await dir.exists()) await dir.create(recursive: true);
     }
     return dir.path;
+  }
+
+  static Future<String> _getAndroidChipsetInfo() async {
+    try {
+      final file = File('/proc/cpuinfo');
+      if (await file.exists()) {
+        final lines = await file.readAsLines();
+        for (var line in lines) {
+          final l = line.toLowerCase();
+          if (l.contains('hardware') || l.contains('model name') || l.contains('features') || l.contains('processor')) {
+            return line;
+          }
+        }
+      }
+    } catch (_) {}
+    return 'unknown';
   }
 }
