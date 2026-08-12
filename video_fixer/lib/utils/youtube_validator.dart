@@ -263,12 +263,177 @@ class YouTubeValidationFeedback extends StatelessWidget {
               ],
             ),
           ),
-          Text(
-            '$currentLength/$maxLength',
-            style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '$currentLength/$maxLength',
+                style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(width: 8),
+              RadialCharacterCountIndicator(
+                currentLength: currentLength,
+                maxLength: maxLength,
+              ),
+            ],
           ),
         ],
       ),
+    );
+  }
+}
+
+class TagChipInput extends StatefulWidget {
+  final List<String> tags;
+  final ValueChanged<List<String>> onChanged;
+
+  const TagChipInput({
+    super.key,
+    required this.tags,
+    required this.onChanged,
+  });
+
+  @override
+  State<TagChipInput> createState() => _TagChipInputState();
+}
+
+class _TagChipInputState extends State<TagChipInput> {
+  final TextEditingController _inputController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _inputController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _addTag(String val) {
+    final tag = val.trim().replaceAll(',', '');
+    if (tag.isNotEmpty && !widget.tags.contains(tag)) {
+      final newTags = List<String>.from(widget.tags)..add(tag);
+      widget.onChanged(newTags);
+    }
+    _inputController.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A2A),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.tags.isNotEmpty) ...[
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: widget.tags.map((tag) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF0000).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFFF0000).withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        tag,
+                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () {
+                          final newTags = List<String>.from(widget.tags)..remove(tag);
+                          widget.onChanged(newTags);
+                        },
+                        child: const Icon(Icons.close, size: 14, color: Colors.white70),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 10),
+          ],
+          TextField(
+            controller: _inputController,
+            focusNode: _focusNode,
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              isDense: true,
+              hintText: "Teg yozing (Vergul yoki Enter bosing)...",
+              hintStyle: TextStyle(color: Colors.white24, fontSize: 12),
+            ),
+            onChanged: (val) {
+              if (val.contains(',')) {
+                _addTag(val);
+              }
+            },
+            onSubmitted: (val) {
+              _addTag(val);
+              _focusNode.requestFocus();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class RadialCharacterCountIndicator extends StatelessWidget {
+  final int currentLength;
+  final int maxLength;
+
+  const RadialCharacterCountIndicator({
+    super.key,
+    required this.currentLength,
+    required this.maxLength,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final double progress = (currentLength / maxLength).clamp(0.0, 1.0);
+    final isOverLimit = currentLength > maxLength;
+    final bool isNearLimit = currentLength >= maxLength * 0.9 && !isOverLimit;
+
+    final Color color = isOverLimit
+        ? Colors.redAccent
+        : isNearLimit
+            ? Colors.amberAccent
+            : const Color(0xFF69F0AE); // var(--green-accent)
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(
+            value: progress,
+            strokeWidth: 2.0,
+            backgroundColor: Colors.white10,
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+          ),
+        ),
+        if (isOverLimit || isNearLimit)
+          Text(
+            '${maxLength - currentLength}',
+            style: TextStyle(
+              color: color,
+              fontSize: 8,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+      ],
     );
   }
 }

@@ -86,4 +86,51 @@ class NotificationService {
       // Ignore when plugin is unavailable on this runtime.
     }
   }
+
+  static Future<void> showPersistentProgressNotification({
+    required int id,
+    required String title,
+    required String body,
+    required int progress, // 0 to 100
+  }) async {
+    if (!_initialized) return;
+
+    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'youtube_upload_foreground_channel',
+      'Video Yuklash (Fonda)',
+      channelDescription: 'Fonda video yuklash jarayoni bildirishnomasi',
+      importance: Importance.low,
+      priority: Priority.low,
+      playSound: false,
+      enableVibration: false,
+      ongoing: true, // Non-dismissible
+      showProgress: true,
+      maxProgress: 100,
+      progress: progress,
+    );
+
+    final NotificationDetails notificationDetails = NotificationDetails(
+      android: androidDetails,
+    );
+
+    try {
+      await _notificationsPlugin.show(
+        id,
+        title,
+        body,
+        notificationDetails,
+      );
+    } on MissingPluginException {
+      // Ignore
+    }
+  }
+
+  static Future<void> cancelNotification(int id) async {
+    if (!_initialized) return;
+    try {
+      await _notificationsPlugin.cancel(id);
+    } on MissingPluginException {
+      // Ignore
+    }
+  }
 }

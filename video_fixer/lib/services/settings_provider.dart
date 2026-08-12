@@ -23,6 +23,16 @@ class SettingsProvider extends ChangeNotifier {
   bool _isLoading = true;
   bool get isLoading => _isLoading;
 
+  // Speech-to-Text (STT) Settings
+  bool _sttEnabled = false;
+  bool get sttEnabled => _sttEnabled;
+
+  String _sttApiKey = '';
+  String get sttApiKey => _sttApiKey;
+
+  String _sttEndpoint = 'https://api.openai.com/v1/audio/transcriptions';
+  String get sttEndpoint => _sttEndpoint;
+
   SettingsProvider() {
     _loadAccounts();
   }
@@ -42,11 +52,31 @@ class SettingsProvider extends ChangeNotifier {
       _defaultDescription = await _storage.read(key: 'default_description') ?? '';
       _defaultHashtags = await _storage.read(key: 'default_hashtags') ?? '';
 
+      _sttEnabled = (await _storage.read(key: 'stt_enabled') ?? 'false') == 'true';
+      _sttApiKey = await _storage.read(key: 'stt_api_key') ?? '';
+      _sttEndpoint = await _storage.read(key: 'stt_endpoint') ?? 'https://api.openai.com/v1/audio/transcriptions';
+
     } catch (e) {
       secureLog('Error loading settings: $e');
     }
 
     _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> saveSTTSettings({
+    required bool enabled,
+    required String apiKey,
+    required String endpoint,
+  }) async {
+    _sttEnabled = enabled;
+    _sttApiKey = apiKey;
+    _sttEndpoint = endpoint;
+
+    await _storage.write(key: 'stt_enabled', value: enabled.toString());
+    await _storage.write(key: 'stt_api_key', value: apiKey);
+    await _storage.write(key: 'stt_endpoint', value: endpoint);
+
     notifyListeners();
   }
 
