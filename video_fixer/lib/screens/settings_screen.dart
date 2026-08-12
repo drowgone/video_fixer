@@ -17,6 +17,26 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  late TextEditingController _sttApiKeyController;
+  late TextEditingController _sttEndpointController;
+  bool _sttEnabledLocal = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final provider = Provider.of<SettingsProvider>(context, listen: false);
+    _sttApiKeyController = TextEditingController(text: provider.sttApiKey);
+    _sttEndpointController = TextEditingController(text: provider.sttEndpoint);
+    _sttEnabledLocal = provider.sttEnabled;
+  }
+
+  @override
+  void dispose() {
+    _sttApiKeyController.dispose();
+    _sttEndpointController.dispose();
+    super.dispose();
+  }
+
   Future<void> _connectAccount() async {
     try {
       final newAccounts = await YouTubeUploader.connectAndFetchChannels(context);
@@ -370,10 +390,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           _sectionLabel(
                               'Teglar (vergul bilan ajratilib)', Icons.tag),
                           const SizedBox(height: 6),
-                          _settingsTextField(
-                            controller: tagsController,
-                            hint: 'tag1, tag2, tag3...',
-                            onChanged: (_) => setSheetState(() {}),
+                          TagChipInput(
+                            tags: tagsController.text
+                                .split(',')
+                                .map((e) => e.trim())
+                                .where((e) => e.isNotEmpty)
+                                .toList(),
+                            onChanged: (newTagsList) {
+                              setSheetState(() {
+                                tagsController.text = newTagsList.join(', ');
+                              });
+                            },
                           ),
                           YouTubeValidationFeedback(
                             validation: tagsVal,
@@ -923,11 +950,132 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 }),
                 const SizedBox(height: 8),
                 _buildGoogleConnectButton(),
+                _buildSTTSettingsPanel(provider),
               ],
               const SizedBox(height: 40),
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildSTTSettingsPanel(SettingsProvider provider) {
+    return Card(
+      color: const Color(0xFF161616),
+      margin: const EdgeInsets.only(top: 20),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: Colors.white10, width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.settings_voice, color: Colors.blueAccent, size: 20),
+                const SizedBox(width: 8),
+                const Text(
+                  'Speech-to-Text (Ovozdan Matnga)',
+                  style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+                const Spacer(),
+                Switch(
+                  value: _sttEnabledLocal,
+                  activeThumbColor: const Color(0xFFFF0000),
+                  activeTrackColor: const Color(0xFFFF0000).withValues(alpha: 0.25),
+                  onChanged: (val) {
+                    setState(() {
+                      _sttEnabledLocal = val;
+                    });
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Ovozli videolarni avtomatik matnga aylantirish (Whisper AI) xizmati.',
+              style: TextStyle(color: Colors.white38, fontSize: 11),
+            ),
+            if (_sttEnabledLocal) ...[
+              const Divider(color: Colors.white10, height: 24),
+              const Text(
+                'API kaliti',
+                style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
+              _settingsTextField(
+                controller: _sttApiKeyController,
+                hint: 'Whisper API Kaliti (shaxsiy)...',
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'API Endpoint (Whisper API)',
+                style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
+              _settingsTextField(
+                controller: _sttEndpointController,
+                hint: 'https://api.openai.com/v1/...',
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 40,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Color(0xFFFF0000)),
+                    backgroundColor: const Color(0xFFFF0000).withValues(alpha: 0.1),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () async {
+                    await provider.saveSTTSettings(
+                      enabled: _sttEnabledLocal,
+                      apiKey: _sttApiKeyController.text.trim(),
+                      endpoint: _sttEndpointController.text.trim(),
+                    );
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('✅ STT sozlamalari muvaffaqiyatli saqlandi!'),
+                      ));
+                    }
+                  },
+                  child: const Text('Sozlamalarni saqlash', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ] else ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                height: 40,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white70,
+                    side: const BorderSide(color: Colors.white10),
+                    backgroundColor: const Color(0xFF222222),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () async {
+                    await provider.saveSTTSettings(
+                      enabled: _sttEnabledLocal,
+                      apiKey: '',
+                      endpoint: _sttEndpointController.text.trim(),
+                    );
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('✅ STT xizmati o\'chirildi!'),
+                      ));
+                    }
+                  },
+                  child: const Text('O\'chirishni saqlash', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

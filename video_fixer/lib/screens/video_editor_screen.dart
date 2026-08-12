@@ -4,251 +4,16 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:just_audio/just_audio.dart' as ja;
-import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'upload_screen.dart';
 import '../services/ffmpeg_runner.dart';
-import '../services/thumbnail_cache.dart';
-import 'dart:typed_data';
 import '../services/security_service.dart';
 
-// --- LAYER MODELS ---
-
-class TextLayer {
-  final String id;
-  String text;
-  Offset position; // relative coordinates (0.0 to 1.0)
-  double fontSize;
-  Color textColor;
-  Color bgColor;
-  bool hasBg;
-  bool hasShadow;
-  Color shadowColor;
-  String fontFamily; // e.g., 'Roboto', 'Poppins', 'Pacifico'
-  String fontStyle; // 'normal', 'bold', 'italic'
-  double startTime;
-  double duration;
-  double scale;
-  double rotation; // radians
-  String animation; // 'Fade', 'Slide', 'Bounce', 'Typewriter', 'Zoom'
-
-  TextLayer({
-    required this.id,
-    required this.text,
-    required this.position,
-    this.fontSize = 22.0,
-    this.textColor = Colors.white,
-    this.bgColor = Colors.black54,
-    this.hasBg = false,
-    this.hasShadow = true,
-    this.shadowColor = Colors.black45,
-    this.fontFamily = 'Roboto',
-    this.fontStyle = 'normal',
-    this.startTime = 0.0,
-    this.duration = 5.0,
-    this.scale = 1.0,
-    this.rotation = 0.0,
-    this.animation = 'Fade',
-  });
-
-  TextLayer copyWith({
-    String? text,
-    Offset? position,
-    double? fontSize,
-    Color? textColor,
-    Color? bgColor,
-    bool? hasBg,
-    bool? hasShadow,
-    Color? shadowColor,
-    String? fontFamily,
-    String? fontStyle,
-    double? startTime,
-    double? duration,
-    double? scale,
-    double? rotation,
-    String? animation,
-  }) {
-    return TextLayer(
-      id: id,
-      text: text ?? this.text,
-      position: position ?? this.position,
-      fontSize: fontSize ?? this.fontSize,
-      textColor: textColor ?? this.textColor,
-      bgColor: bgColor ?? this.bgColor,
-      hasBg: hasBg ?? this.hasBg,
-      hasShadow: hasShadow ?? this.hasShadow,
-      shadowColor: shadowColor ?? this.shadowColor,
-      fontFamily: fontFamily ?? this.fontFamily,
-      fontStyle: fontStyle ?? this.fontStyle,
-      startTime: startTime ?? this.startTime,
-      duration: duration ?? this.duration,
-      scale: scale ?? this.scale,
-      rotation: rotation ?? this.rotation,
-      animation: animation ?? this.animation,
-    );
-  }
-}
-
-class StickerLayer {
-  final String id;
-  final String emoji;
-  Offset position;
-  double startTime;
-  double duration;
-  double scale;
-  double rotation; // radians
-
-  StickerLayer({
-    required this.id,
-    required this.emoji,
-    required this.position,
-    this.startTime = 0.0,
-    this.duration = 5.0,
-    this.scale = 1.0,
-    this.rotation = 0.0,
-  });
-
-  StickerLayer copyWith({
-    String? emoji,
-    Offset? position,
-    double? startTime,
-    double? duration,
-    double? scale,
-    double? rotation,
-  }) {
-    return StickerLayer(
-      id: id,
-      emoji: emoji ?? this.emoji,
-      position: position ?? this.position,
-      startTime: startTime ?? this.startTime,
-      duration: duration ?? this.duration,
-      scale: scale ?? this.scale,
-      rotation: rotation ?? this.rotation,
-    );
-  }
-}
-
-class AudioLayer {
-  final String id;
-  final String path;
-  final String title;
-  double volume; // 0.0 to 2.0
-  double startTime;
-  double trimStart;
-  double duration;
-  double fadeIn; // seconds
-  double fadeOut; // seconds
-  bool loop;
-  bool isVocalRemoved;
-
-  AudioLayer({
-    required this.id,
-    required this.path,
-    required this.title,
-    this.volume = 1.0,
-    this.startTime = 0.0,
-    this.trimStart = 0.0,
-    this.duration = 10.0,
-    this.fadeIn = 0.0,
-    this.fadeOut = 0.0,
-    this.loop = false,
-    this.isVocalRemoved = false,
-  });
-
-  AudioLayer copyWith({
-    String? path,
-    String? title,
-    double? volume,
-    double? startTime,
-    double? trimStart,
-    double? duration,
-    double? fadeIn,
-    double? fadeOut,
-    bool? loop,
-    bool? isVocalRemoved,
-  }) {
-    return AudioLayer(
-      id: id,
-      path: path ?? this.path,
-      title: title ?? this.title,
-      volume: volume ?? this.volume,
-      startTime: startTime ?? this.startTime,
-      trimStart: trimStart ?? this.trimStart,
-      duration: duration ?? this.duration,
-      fadeIn: fadeIn ?? this.fadeIn,
-      fadeOut: fadeOut ?? this.fadeOut,
-      loop: loop ?? this.loop,
-      isVocalRemoved: isVocalRemoved ?? this.isVocalRemoved,
-    );
-  }
-}
-
-class VideoLayer {
-  final double startCut;
-  final double endCut;
-  final double speed;
-  final double originalVolume; // 0.0 to 1.0 (original sound mute state)
-  final List<TextLayer> texts;
-  final List<StickerLayer> stickers;
-  final List<AudioLayer> audios;
-
-  VideoLayer({
-    this.startCut = 0.0,
-    this.endCut = 0.0,
-    this.speed = 1.0,
-    this.originalVolume = 1.0,
-    required this.texts,
-    required this.stickers,
-    required this.audios,
-  });
-
-  VideoLayer copyWith({
-    double? startCut,
-    double? endCut,
-    double? speed,
-    double? originalVolume,
-    List<TextLayer>? texts,
-    List<StickerLayer>? stickers,
-    List<AudioLayer>? audios,
-  }) {
-    return VideoLayer(
-      startCut: startCut ?? this.startCut,
-      endCut: endCut ?? this.endCut,
-      speed: speed ?? this.speed,
-      originalVolume: originalVolume ?? this.originalVolume,
-      texts: texts != null ? List.from(texts) : List.from(this.texts),
-      stickers: stickers != null ? List.from(stickers) : List.from(this.stickers),
-      audios: audios != null ? List.from(audios) : List.from(this.audios),
-    );
-  }
-}
-
-final List<Color> _pickerColors = [
-  Colors.white,
-  Colors.black,
-  Colors.red,
-  Colors.pink,
-  Colors.purple,
-  Colors.deepPurple,
-  Colors.indigo,
-  Colors.blue,
-  Colors.lightBlue,
-  Colors.cyan,
-  Colors.teal,
-  Colors.green,
-  Colors.lightGreen,
-  Colors.lime,
-  Colors.yellow,
-  Colors.amber,
-  Colors.orange,
-  Colors.deepOrange,
-  Colors.brown,
-  Colors.grey,
-  Colors.blueGrey,
-];
-
+import 'video_editor/video_editor_models.dart';
+import 'video_editor/video_editor_timeline.dart';
+import 'video_editor/video_editor_panels.dart';
 // --- VIDEO EDITOR SCREEN ---
 
 class VideoEditorScreen extends StatefulWidget {
@@ -261,6 +26,9 @@ class VideoEditorScreen extends StatefulWidget {
 }
 
 class _VideoEditorScreenState extends State<VideoEditorScreen> with SingleTickerProviderStateMixin {
+  // Picker Colors alias from models
+  final List<Color> _pickerColors = pickerColors;
+
   // Undo/Redo Stacks
   final List<VideoLayer> _undoStack = [];
   final List<VideoLayer> _redoStack = [];
@@ -273,6 +41,12 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> with SingleTicker
   
   double _totalDuration = 0.0;
   double _currentTime = 0.0;
+
+  // Interactive Crop Area (0.0 to 1.0 relative coordinates)
+  double _cropLeft = 0.1;
+  double _cropTop = 0.1;
+  double _cropWidth = 0.8;
+  double _cropHeight = 0.8;
   bool _isLoading = true;
   bool _isExporting = false;
   bool _isPlaying = false;
@@ -1174,6 +948,9 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> with SingleTicker
                     )
                   else
                     const Center(child: CircularProgressIndicator(color: Colors.red)),
+
+                  // Golden Custom Interactive Crop/Trim UI Frame Overlay
+                  _buildInteractiveCropOverlay(constraints),
 
                   // Play/Pause overlay button (fades out when playing)
                   if (!_isPlaying)
@@ -2401,599 +2178,247 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> with SingleTicker
     final double seconds = totalSeconds % 60;
     return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toStringAsFixed(3).padLeft(6, '0')}';
   }
+
+  // --- INTERACTIVE DRAG-AND-DROP CROP OVERLAY ---
+
+  Widget _buildInteractiveCropOverlay(BoxConstraints constraints) {
+    if (_activeTool != 'cut') {
+      return const SizedBox.shrink();
+    }
+
+    final double width = constraints.maxWidth;
+    final double height = constraints.maxHeight;
+
+    final double rectLeft = _cropLeft * width;
+    final double rectTop = _cropTop * height;
+    final double rectWidth = _cropWidth * width;
+    final double rectHeight = _cropHeight * height;
+
+    return Stack(
+      children: [
+        // Custom Painter to draw dim overlay outside the crop rect
+        Positioned.fill(
+          child: CustomPaint(
+            painter: CropOverlayPainter(
+              left: rectLeft,
+              top: rectTop,
+              width: rectWidth,
+              height: rectHeight,
+            ),
+          ),
+        ),
+
+        // The draggable crop rect boundary
+        Positioned(
+          left: rectLeft,
+          top: rectTop,
+          width: rectWidth,
+          height: rectHeight,
+          child: GestureDetector(
+            onPanUpdate: (details) {
+              setState(() {
+                _cropLeft = (_cropLeft + details.delta.dx / width).clamp(0.0, 1.0 - _cropWidth);
+                _cropTop = (_cropTop + details.delta.dy / height).clamp(0.0, 1.0 - _cropHeight);
+              });
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+              ),
+              child: Stack(
+                children: [
+                  // Grid lines inside the crop box (3x3 grid)
+                  Column(
+                    children: [
+                      Expanded(child: Container(decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Colors.white24, width: 0.5))))),
+                      Expanded(child: Container(decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Colors.white24, width: 0.5))))),
+                      Expanded(child: Container()),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: Colors.white24, width: 0.5))))),
+                      Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: Colors.white24, width: 0.5))))),
+                      Expanded(child: Container()),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // Corner Handles (Drag & drop handles to resize crop box)
+        // Top-Left corner
+        Positioned(
+          left: rectLeft - 10,
+          top: rectTop - 10,
+          child: GestureDetector(
+            onPanUpdate: (details) {
+              setState(() {
+                final double originalRight = _cropLeft + _cropWidth;
+                final double originalBottom = _cropTop + _cropHeight;
+
+                final double newLeft = (_cropLeft + details.delta.dx / width).clamp(0.0, originalRight - 0.1);
+                final double newTop = (_cropTop + details.delta.dy / height).clamp(0.0, originalBottom - 0.1);
+
+                _cropLeft = newLeft;
+                _cropWidth = originalRight - newLeft;
+                _cropTop = newTop;
+                _cropHeight = originalBottom - newTop;
+              });
+            },
+            child: _buildCornerHandle(true, true),
+          ),
+        ),
+
+        // Top-Right corner
+        Positioned(
+          left: rectLeft + rectWidth - 10,
+          top: rectTop - 10,
+          child: GestureDetector(
+            onPanUpdate: (details) {
+              setState(() {
+                final double originalBottom = _cropTop + _cropHeight;
+
+                final double newWidth = (_cropWidth + details.delta.dx / width).clamp(0.1, 1.0 - _cropLeft);
+                final double newTop = (_cropTop + details.delta.dy / height).clamp(0.0, originalBottom - 0.1);
+
+                _cropWidth = newWidth;
+                _cropTop = newTop;
+                _cropHeight = originalBottom - newTop;
+              });
+            },
+            child: _buildCornerHandle(false, true),
+          ),
+        ),
+
+        // Bottom-Left corner
+        Positioned(
+          left: rectLeft - 10,
+          top: rectTop + rectHeight - 10,
+          child: GestureDetector(
+            onPanUpdate: (details) {
+              setState(() {
+                final double originalRight = _cropLeft + _cropWidth;
+
+                final double newLeft = (_cropLeft + details.delta.dx / width).clamp(0.0, originalRight - 0.1);
+                final double newHeight = (_cropHeight + details.delta.dy / height).clamp(0.1, 1.0 - _cropTop);
+
+                _cropLeft = newLeft;
+                _cropWidth = originalRight - newLeft;
+                _cropHeight = newHeight;
+              });
+            },
+            child: _buildCornerHandle(true, false),
+          ),
+        ),
+
+        // Bottom-Right corner
+        Positioned(
+          left: rectLeft + rectWidth - 10,
+          top: rectTop + rectHeight - 10,
+          child: GestureDetector(
+            onPanUpdate: (details) {
+              setState(() {
+                final double newWidth = (_cropWidth + details.delta.dx / width).clamp(0.1, 1.0 - _cropLeft);
+                final double newHeight = (_cropHeight + details.delta.dy / height).clamp(0.1, 1.0 - _cropTop);
+
+                _cropWidth = newWidth;
+                _cropHeight = newHeight;
+              });
+            },
+            child: _buildCornerHandle(false, false),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCornerHandle(bool isLeft, bool isTop) {
+    return Container(
+      width: 20,
+      height: 20,
+      color: Colors.transparent,
+      child: CustomPaint(
+        painter: CornerHandlePainter(isLeft: isLeft, isTop: isTop),
+      ),
+    );
+  }
 }
 
-// --- WAVEFORM PAINTER ---
+class CropOverlayPainter extends CustomPainter {
+  final double left;
+  final double top;
+  final double width;
+  final double height;
 
-class AudioWaveformPainter extends CustomPainter {
-  final Color color;
-
-  AudioWaveformPainter({required this.color});
+  CropOverlayPainter({
+    required this.left,
+    required this.top,
+    required this.width,
+    required this.height,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color
-      ..strokeWidth = 2.0
+      ..color = Colors.black54
+      ..style = PaintingStyle.fill;
+
+    // Draw the dimmed background outside the crop box
+    // Top box
+    canvas.drawRect(Rect.fromLTRB(0, 0, size.width, top), paint);
+    // Bottom box
+    canvas.drawRect(Rect.fromLTRB(0, top + height, size.width, size.height), paint);
+    // Left box
+    canvas.drawRect(Rect.fromLTRB(0, top, left, top + height), paint);
+    // Right box
+    canvas.drawRect(Rect.fromLTRB(left + width, top, size.width, top + height), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class CornerHandlePainter extends CustomPainter {
+  final bool isLeft;
+  final bool isTop;
+
+  CornerHandlePainter({required this.isLeft, required this.isTop});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFFFFD700) // Golden
+      ..strokeWidth = 3.0
       ..style = PaintingStyle.stroke;
 
-    final double width = size.width;
-    final double height = size.height;
-    final int bars = (width / 5).floor();
+    final double x = isLeft ? 10.0 : 10.0;
+    final double y = isTop ? 10.0 : 10.0;
 
-    for (int i = 0; i < bars; i++) {
-      final double x = i * 5.0 + 2.5;
-      final double barHeight = (math.sin(i * 0.35) * 0.4 + 0.5) * height * 0.8;
-      final double y1 = (height - barHeight) / 2;
-      final double y2 = y1 + barHeight;
-      canvas.drawLine(Offset(x, y1), Offset(x, y2), paint);
+    final Path path = Path();
+    if (isLeft && isTop) {
+      path.moveTo(x + 10, y);
+      path.lineTo(x, y);
+      path.lineTo(x, y + 10);
+    } else if (!isLeft && isTop) {
+      path.moveTo(x - 10, y);
+      path.lineTo(x, y);
+      path.lineTo(x, y + 10);
+    } else if (isLeft && !isTop) {
+      path.moveTo(x + 10, y);
+      path.lineTo(x, y);
+      path.lineTo(x, y - 10);
+    } else {
+      path.moveTo(x - 10, y);
+      path.lineTo(x, y);
+      path.lineTo(x, y - 10);
     }
+
+    canvas.drawPath(path, paint);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-// --- TIMELINE ARCHITECTURE AND MODELS ---
-
-enum TimelineItemType { video, audio, text, sticker }
-
-class TimelineItem {
-  final String id;
-  final TimelineItemType type;
-  double startSeconds;
-  double durationSeconds;
-  final Color color;
-  final String label;
-  bool isSelected;
-
-  TimelineItem({
-    required this.id,
-    required this.type,
-    required this.startSeconds,
-    required this.durationSeconds,
-    required this.color,
-    required this.label,
-    this.isSelected = false,
-  });
-}
-
-class TimelineState {
-  List<TimelineItem> items;
-  double pixelsPerSecond; // zoom
-  double playheadPosition;
-  TimelineItem? selectedItem;
-
-  TimelineState({
-    required this.items,
-    required this.pixelsPerSecond,
-    required this.playheadPosition,
-    this.selectedItem,
-  });
-}
-
-// --- TIMELINE ROW WIDGET ---
-
-class TimelineRow extends StatelessWidget {
-  final String type;
-  final TimelineItem? item;
-  final List<TimelineItem>? items;
-  final String? videoPath;
-  final double pixelsPerSecond;
-  final double maxDuration;
-  final ValueChanged<TimelineItem> onSelect;
-  final Function(TimelineItem, double, double) onUpdate;
-
-  const TimelineRow({
-    super.key,
-    required this.type,
-    this.item,
-    this.items,
-    this.videoPath,
-    required this.pixelsPerSecond,
-    required this.maxDuration,
-    required this.onSelect,
-    required this.onUpdate,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final List<TimelineItem> list = [];
-    if (item != null) list.add(item!);
-    if (items != null) list.addAll(items!);
-
-    return Container(
-      height: 60,
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.02),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Stack(
-        children: list.map((item) {
-          final isSelected = item.isSelected;
-          final double left = item.startSeconds * pixelsPerSecond;
-          final double width = item.durationSeconds * pixelsPerSecond;
-
-          return Positioned(
-            left: left,
-            width: width.clamp(30.0, double.infinity),
-            top: 6,
-            bottom: 6,
-            child: GestureDetector(
-              onTap: () => onSelect(item),
-              onHorizontalDragUpdate: (details) {
-                double newStart = item.startSeconds + details.delta.dx / pixelsPerSecond;
-                newStart = newStart.clamp(0.0, maxDuration - item.durationSeconds);
-                onUpdate(item, newStart, item.durationSeconds);
-              },
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // Main Item block
-                  Container(
-                    decoration: BoxDecoration(
-                      color: isSelected ? item.color : item.color.withValues(alpha: 0.7),
-                      borderRadius: BorderRadius.circular(8),
-                      border: isSelected ? Border.all(color: Colors.white, width: 2) : null,
-                    ),
-                    child: item.type == TimelineItemType.video && videoPath != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Row(
-                              children: List.generate(
-                                (item.durationSeconds / 2.0).ceil(),
-                                (idx) {
-                                  const double stepSec = 2.0;
-                                  final int sec = (item.startSeconds + idx * stepSec).toInt();
-                                  final double remainingSec = item.durationSeconds - (idx * stepSec);
-                                  final double thumbWidth = (remainingSec >= stepSec ? stepSec : remainingSec) * pixelsPerSecond;
-                                  return TimelineVideoThumb(
-                                    videoPath: videoPath!,
-                                    seconds: sec,
-                                    width: thumbWidth,
-                                  );
-                                },
-                              ),
-                            ),
-                          )
-                        : Center(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 14.0),
-                              child: Text(
-                                item.label,
-                                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ),
-                  ),
-
-                  // Left edge resize handle
-                  if (item.type != TimelineItemType.video)
-                    Positioned(
-                      left: -4,
-                      top: 0,
-                      bottom: 0,
-                      child: GestureDetector(
-                        onHorizontalDragUpdate: (details) {
-                          double delta = details.delta.dx / pixelsPerSecond;
-                          double newStart = item.startSeconds + delta;
-                          double newDuration = item.durationSeconds - delta;
-                          if (newStart >= 0 && newDuration >= 1.0) {
-                            onUpdate(item, newStart, newDuration);
-                          }
-                        },
-                        child: const _ResizeHandle(),
-                      ),
-                    ),
-
-                  // Right edge resize handle
-                  if (item.type != TimelineItemType.video)
-                    Positioned(
-                      right: -4,
-                      top: 0,
-                      bottom: 0,
-                      child: GestureDetector(
-                        onHorizontalDragUpdate: (details) {
-                          double delta = details.delta.dx / pixelsPerSecond;
-                          double newDuration = item.durationSeconds + delta;
-                          if (newDuration >= 1.0) {
-                            onUpdate(item, item.startSeconds, newDuration);
-                          }
-                        },
-                        child: const _ResizeHandle(),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-}
-
-class TimelineVideoThumb extends StatelessWidget {
-  final String videoPath;
-  final int seconds;
-  final double width;
-
-  const TimelineVideoThumb({
-    super.key,
-    required this.videoPath,
-    required this.seconds,
-    required this.width,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<Uint8List?>(
-      future: ThumbnailCache.get(videoPath, seconds),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
-          return Image.memory(
-            snapshot.data!,
-            width: width,
-            height: 48,
-            fit: BoxFit.cover,
-            cacheWidth: 100,
-            cacheHeight: 56,
-          );
-        }
-        return Container(
-          width: width,
-          height: 48,
-          color: Colors.white.withValues(alpha: 0.05),
-          child: const Center(
-            child: SizedBox(
-              width: 12,
-              height: 12,
-              child: CircularProgressIndicator(strokeWidth: 1, color: Colors.white24),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-// --- RESIZE HANDLE ---
-
-class _ResizeHandle extends StatelessWidget {
-  const _ResizeHandle();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 10,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(4),
-        boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 2, offset: Offset(0, 1)),
-        ],
-      ),
-      child: const Center(
-        child: Icon(Icons.drag_handle, size: 8, color: Colors.black87),
-      ),
-    );
-  }
-}
-
-// --- PLAYHEAD POINTER ---
-
-class PlayheadWidget extends StatelessWidget {
-  final double position;
-  final double height;
-
-  const PlayheadWidget({super.key, required this.position, required this.height});
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      left: position,
-      top: 0,
-      bottom: 0,
-      child: Container(
-        width: 2,
-        color: Colors.redAccent,
-        child: Column(
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: Colors.redAccent,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// --- EDIT PANEL WIDGETS ---
-
-class TextEditPanel extends StatelessWidget {
-  final TextLayer text;
-  final VoidCallback onDelete;
-  final ValueChanged<String> onChanged;
-  final ValueChanged<String> onFontChanged;
-  final ValueChanged<Color> onColorChanged;
-  final List<String> fonts;
-
-  const TextEditPanel({
-    super.key,
-    required this.text,
-    required this.onDelete,
-    required this.onChanged,
-    required this.onFontChanged,
-    required this.onColorChanged,
-    required this.fonts,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
-        boxShadow: const [
-          BoxShadow(color: Colors.black54, blurRadius: 10, offset: Offset(0, -2)),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.text_fields, color: Colors.blue, size: 20),
-              const SizedBox(width: 8),
-              const Text('Matnni tahrirlash', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-              const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.redAccent),
-                onPressed: onDelete,
-                tooltip: 'O\'chirish',
-              ),
-              IconButton(
-                icon: const Icon(Icons.check, color: Colors.greenAccent),
-                onPressed: () {
-                  // Deselect
-                  onColorChanged(text.textColor); 
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Container(
-            height: 40,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(8)),
-            child: TextField(
-              style: const TextStyle(color: Colors.white, fontSize: 13),
-              decoration: const InputDecoration(border: InputBorder.none, hintText: 'Matnni yozing...'),
-              controller: TextEditingController(text: text.text)
-                ..selection = TextSelection.fromPosition(TextPosition(offset: text.text.length)),
-              onChanged: onChanged,
-            ),
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 36,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: fonts.length,
-              itemBuilder: (context, index) {
-                final font = fonts[index];
-                final isSelected = text.fontFamily == font;
-                return GestureDetector(
-                  onTap: () => onFontChanged(font),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFFFF0000) : Colors.black38,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: isSelected ? Colors.redAccent : Colors.white12),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      font,
-                      style: GoogleFonts.getFont(font, textStyle: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class AudioEditPanel extends StatelessWidget {
-  final AudioLayer audio;
-  final VoidCallback onDelete;
-  final ValueChanged<double> onVolumeChanged;
-  final ValueChanged<bool> onVocalToggle;
-
-  const AudioEditPanel({
-    super.key,
-    required this.audio,
-    required this.onDelete,
-    required this.onVolumeChanged,
-    required this.onVocalToggle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
-        boxShadow: const [
-          BoxShadow(color: Colors.black54, blurRadius: 10, offset: Offset(0, -2)),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.music_note, color: Colors.green, size: 20),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  audio.title,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.redAccent),
-                onPressed: onDelete,
-                tooltip: 'O\'chirish',
-              ),
-              IconButton(
-                icon: const Icon(Icons.check, color: Colors.greenAccent),
-                onPressed: () {
-                  onVolumeChanged(audio.volume);
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const Text('Hajmi:', style: TextStyle(color: Colors.white70, fontSize: 12)),
-              Expanded(
-                child: Slider(
-                  value: audio.volume,
-                  min: 0.0,
-                  max: 2.0,
-                  activeColor: Colors.green,
-                  onChanged: onVolumeChanged,
-                ),
-              ),
-              Text('${(audio.volume * 100).toInt()}%', style: const TextStyle(color: Colors.white, fontSize: 12)),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('Vokalni o\'chirish (AI):', style: TextStyle(color: Colors.white70, fontSize: 12)),
-              Switch(
-                value: audio.isVocalRemoved,
-                activeThumbColor: Colors.greenAccent,
-                onChanged: onVocalToggle,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class StickerEditPanel extends StatelessWidget {
-  final StickerLayer sticker;
-  final VoidCallback onDelete;
-  final ValueChanged<double> onScaleChanged;
-  final ValueChanged<double> onRotationChanged;
-
-  const StickerEditPanel({
-    super.key,
-    required this.sticker,
-    required this.onDelete,
-    required this.onScaleChanged,
-    required this.onRotationChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
-        boxShadow: const [
-          BoxShadow(color: Colors.black54, blurRadius: 10, offset: Offset(0, -2)),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.emoji_emotions, color: Colors.orange, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Sticker: ${sticker.emoji}',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-              const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.redAccent),
-                onPressed: onDelete,
-                tooltip: 'O\'chirish',
-              ),
-              IconButton(
-                icon: const Icon(Icons.check, color: Colors.greenAccent),
-                onPressed: () {
-                  onScaleChanged(sticker.scale);
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const Text('O\'lchami:', style: TextStyle(color: Colors.white70, fontSize: 12)),
-              Expanded(
-                child: Slider(
-                  value: sticker.scale,
-                  min: 0.2,
-                  max: 3.0,
-                  activeColor: Colors.orange,
-                  onChanged: onScaleChanged,
-                ),
-              ),
-              Text('${(sticker.scale * 100).toInt()}%', style: const TextStyle(color: Colors.white, fontSize: 12)),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              const Text('Burish:', style: TextStyle(color: Colors.white70, fontSize: 12)),
-              Expanded(
-                child: Slider(
-                  value: sticker.rotation,
-                  min: -3.14,
-                  max: 3.14,
-                  activeColor: Colors.orange,
-                  onChanged: onRotationChanged,
-                ),
-              ),
-              Text('${(sticker.rotation * 180 / 3.14).toInt()}°', style: const TextStyle(color: Colors.white, fontSize: 12)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 }
