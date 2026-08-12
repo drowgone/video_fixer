@@ -190,9 +190,8 @@ class SettingsProvider extends ChangeNotifier {
     
     // Description & Hashtags
     String finalDesc = channelSettings['description'] ?? '';
-    finalDesc = finalDesc.isEmpty ? 'Uploaded via VideoFixer' : finalDesc;
     if (isShorts && !finalDesc.toLowerCase().contains('#shorts')) {
-      finalDesc = '$finalDesc\n\n#Shorts';
+      finalDesc = finalDesc.isEmpty ? '#Shorts' : '$finalDesc\n\n#Shorts';
     }
     
     // Tags

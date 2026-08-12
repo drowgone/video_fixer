@@ -252,8 +252,10 @@ class VideoProcessingProvider extends ChangeNotifier {
         final videoFilter = isVertical
             ? 'scale=1080:1920:flags=fast_bilinear,fps=30,format=yuv420p'
             : (_shortsStyle == 'crop'
-                ? 'scale=1080:1920:force_original_aspect_ratio=increase:flags=fast_bilinear,crop=1080:1920,fps=30,format=yuv420p'
-                : '[0:v]scale=108:192:flags=fast_bilinear,gblur=sigma=2,scale=1080:1920:flags=fast_bilinear[bg];[0:v]scale=1080:-2:flags=fast_bilinear[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2,fps=30,format=yuv420p');
+                ? 'scale=1080:1920:force_original_aspect_ratio=increase:flags=bicubic,crop=1080:1920,fps=30,format=yuv420p'
+                : (_shortsStyle == 'black'
+                    ? 'scale=1080:1920:force_original_aspect_ratio=decrease:flags=bicubic,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black,fps=30,format=yuv420p'
+                    : '[0:v]scale=1080:1920:force_original_aspect_ratio=increase:flags=bicubic,crop=1080:1920,gblur=sigma=20[bg];[0:v]scale=1080:-2:flags=bicubic[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2,fps=30,format=yuv420p'));
 
         if (videoFilter.startsWith('[')) {
           command = '-y -i "$inputPath" $trimOpt -filter_complex "$videoFilter" -c:v $videoEncoder $encoderFlags -c:a aac -ar 44100 -ac 2 -b:a 128k -filter:a "$audioFilter" -movflags +faststart "$tempOutputFilePath"';
