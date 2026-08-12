@@ -371,6 +371,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       value: 'blur', label: Text('Blur', style: TextStyle(color: Colors.white))),
                   ButtonSegment<String>(
                       value: 'crop', label: Text('Crop', style: TextStyle(color: Colors.white))),
+                  ButtonSegment<String>(
+                      value: 'black', label: Text('Qora fon', style: TextStyle(color: Colors.white))),
                 ],
                 selected: {provider.shortsStyle},
                 onSelectionChanged: (selection) {
