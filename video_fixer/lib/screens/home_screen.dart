@@ -193,6 +193,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (durationSecs <= 60.1) {
       provider.startProcessing(mode: defaultMode);
     } else {
+      // If it is landscape, ask user first before forcing editor
+      final formatInfo = await FFmpegRunner.probeVideo(filePath);
+      if (formatInfo != null && !formatInfo.isVertical) {
+        if (!mounted) return;
+        final mode = await showOrientationChoiceSheet(context, formatInfo);
+        if (mode == null) return;
+        if (mode == ProcessMode.horizontalToShorts) {
+          _showShortsOptionsBottomSheet(mode: ProcessMode.horizontalToShorts);
+        } else {
+          // Direct 16:9 upload flow -> no trim, proceed with direct processing
+          provider.startProcessing(mode: ProcessMode.horizontalDirectUpload);
+        }
+        return;
+      }
+
       if (!mounted) return;
       final String? trimmedPath = await Navigator.push(
         context,
@@ -247,6 +262,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final provider = Provider.of<VideoProcessingProvider>(context, listen: false);
     provider.selectVideo(filePath, sizeMB: sizeMB, durationSecs: durationSecs, thumbPath: thumbPath);
     provider.setInputFormatInfo(await FFmpegRunner.probeVideo(filePath));
+
+    final formatInfoForUpload = await FFmpegRunner.probeVideo(filePath);
+    final isLnd = formatInfoForUpload != null && !formatInfoForUpload.isVertical;
+
+    if (isLnd) {
+      // Landscape video can be uploaded directly as 16:9 non-Shorts or Shorts
+      if (!mounted) return;
+      final mode = await showOrientationChoiceSheet(context, formatInfoForUpload);
+      if (mode == null) return;
+      if (mode == ProcessMode.horizontalDirectUpload) {
+        // Direct non-Shorts 16:9 flow -> no trim, proceed to UploadScreen as non-Shorts
+        if (!mounted) return;
+        Navigator.push(context, _slideUpRoute(UploadScreen(filePath: filePath, isShorts: false)));
+        return;
+      }
+    }
 
     if (durationSecs <= 60.1) {
       if (!mounted) return;
@@ -339,6 +370,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (mode == ProcessMode.horizontalToShorts) {
         _showShortsOptionsBottomSheet(mode: ProcessMode.horizontalToShorts);
       } else {
+        // Direct horizontal 16:9 upload flow has no 60-second limit and doesn't trim
         provider.startProcessing(mode: ProcessMode.horizontalDirectUpload);
       }
     }
@@ -371,6 +403,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       value: 'blur', label: Text('Blur', style: TextStyle(color: Colors.white))),
                   ButtonSegment<String>(
                       value: 'crop', label: Text('Crop', style: TextStyle(color: Colors.white))),
+                  ButtonSegment<String>(
+                      value: 'black', label: Text('Qora fon', style: TextStyle(color: Colors.white))),
                 ],
                 selected: {provider.shortsStyle},
                 onSelectionChanged: (selection) {

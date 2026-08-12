@@ -110,32 +110,38 @@ class _UploadScreenState extends State<UploadScreen>
         CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut);
     _uploadFilePath = widget.filePath;
 
-    // Auto-append and pin #Shorts in title field
+    // Auto-append and pin #Shorts in title field only if isShorts is true
     final initialTitle = p.basenameWithoutExtension(widget.filePath);
-    _titleController = TextEditingController(
-      text: initialTitle.toLowerCase().contains('#shorts')
-          ? initialTitle
-          : '${initialTitle.trimRight()} #Shorts',
-    );
+    if (widget.isShorts) {
+      _titleController = TextEditingController(
+        text: initialTitle.toLowerCase().contains('#shorts')
+            ? initialTitle
+            : '${initialTitle.trimRight()} #Shorts',
+      );
+    } else {
+      _titleController = TextEditingController(text: initialTitle);
+    }
     _descController = HashtagHighlightController();
 
     _titleController.addListener(() {
-      final text = _titleController.text;
-      if (!text.endsWith('#Shorts')) {
-        String base = text;
-        base = base
-            .replaceAll(RegExp(r'#shorts', caseSensitive: false), '')
-            .trim();
-        final newText = base.isEmpty ? '#Shorts' : '$base #Shorts';
+      if (widget.isShorts) {
+        final text = _titleController.text;
+        if (!text.endsWith('#Shorts')) {
+          String base = text;
+          base = base
+              .replaceAll(RegExp(r'#shorts', caseSensitive: false), '')
+              .trim();
+          final newText = base.isEmpty ? '#Shorts' : '$base #Shorts';
 
-        final int cursorOffset = base.length;
+          final int cursorOffset = base.length;
 
-        _titleController.value = TextEditingValue(
-          text: newText,
-          selection: TextSelection.fromPosition(
-            TextPosition(offset: cursorOffset.clamp(0, newText.length)),
-          ),
-        );
+          _titleController.value = TextEditingValue(
+            text: newText,
+            selection: TextSelection.fromPosition(
+              TextPosition(offset: cursorOffset.clamp(0, newText.length)),
+            ),
+          );
+        }
       }
       if (mounted) setState(() {});
     });
@@ -460,118 +466,120 @@ class _UploadScreenState extends State<UploadScreen>
       }
     }
 
-    // Get video duration via FFprobe to verify the 60 seconds limit
-    try {
-      final mediaInfo = await FFprobeKit.getMediaInformation(_uploadFilePath);
-      final info = mediaInfo.getMediaInformation();
-      if (info != null) {
-        final durationStr = info.getDuration();
-        if (durationStr != null) {
-          final durationSecs = double.tryParse(durationStr) ?? 0.0;
-          if (durationSecs > 60.1) {
-            // Show alert dialog and offer trimming
-            if (!mounted) return;
-            final trimConfirmed = await showDialog<bool>(
-              context: context,
-              barrierDismissible: false,
-              builder: (context) => AlertDialog(
-                backgroundColor: const Color(0xFF1E1E1E),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-                title: const Row(
-                  children: [
-                    Icon(Icons.warning, color: Colors.orangeAccent),
-                    SizedBox(width: 8),
-                    Text('Muddati juda uzun! ⚠️',
-                        style: TextStyle(color: Colors.white, fontSize: 16)),
-                  ],
-                ),
-                content: const Text(
-                  'YouTube Shorts videolari 60 soniyadan oshmasligi kerak. Videoni avtomatik 60 soniyaga qisqartiraylikmi?\n(Qisqartirmasdan yuklash mumkin emas)',
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Bekor qilish',
-                        style: TextStyle(color: Colors.white54)),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF0000)),
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text('Qisqartirish',
-                        style: TextStyle(color: Colors.white)),
-                  ),
-                ],
-              ),
-            );
-
-            if (trimConfirmed == true) {
-              // Show a loading dialog while trimming
+    if (widget.isShorts) {
+      // Get video duration via FFprobe to verify the 60 seconds limit
+      try {
+        final mediaInfo = await FFprobeKit.getMediaInformation(_uploadFilePath);
+        final info = mediaInfo.getMediaInformation();
+        if (info != null) {
+          final durationStr = info.getDuration();
+          if (durationStr != null) {
+            final durationSecs = double.tryParse(durationStr) ?? 0.0;
+            if (durationSecs > 60.1) {
+              // Show alert dialog and offer trimming
               if (!mounted) return;
-              showDialog(
+              final trimConfirmed = await showDialog<bool>(
                 context: context,
-                useRootNavigator: true,
                 barrierDismissible: false,
-                builder: (context) => const Center(
-                  child: Card(
-                    color: Color(0xFF1E1E1E),
-                    child: Padding(
-                      padding: EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CircularProgressIndicator(color: Color(0xFFFF0000)),
-                          SizedBox(height: 16),
-                          Text('Video 60 soniyaga qisqartirilmoqda...',
-                              style: TextStyle(color: Colors.white)),
-                        ],
-                      ),
-                    ),
+                builder: (context) => AlertDialog(
+                  backgroundColor: const Color(0xFF1E1E1E),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  title: const Row(
+                    children: [
+                      Icon(Icons.warning, color: Colors.orangeAccent),
+                      SizedBox(width: 8),
+                      Text('Muddati juda uzun! ⚠️',
+                          style: TextStyle(color: Colors.white, fontSize: 16)),
+                    ],
                   ),
+                  content: const Text(
+                    'YouTube Shorts videolari 60 soniyadan oshmasligi kerak. Videoni avtomatik 60 soniyaga qisqartiraylikmi?\n(Qisqartirmasdan yuklash mumkin emas)',
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Bekor qilish',
+                          style: TextStyle(color: Colors.white54)),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF0000)),
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Qisqartirish',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
                 ),
               );
 
-              // Trim video using FFmpeg
-              final tempDir = await getTemporaryDirectory();
-              final trimmedPath = p.join(tempDir.path,
-                  'trimmed_${DateTime.now().millisecondsSinceEpoch}.mp4');
+              if (trimConfirmed == true) {
+                // Show a loading dialog while trimming
+                if (!mounted) return;
+                showDialog(
+                  context: context,
+                  useRootNavigator: true,
+                  barrierDismissible: false,
+                  builder: (context) => const Center(
+                    child: Card(
+                      color: Color(0xFF1E1E1E),
+                      child: Padding(
+                        padding: EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(color: Color(0xFFFF0000)),
+                            SizedBox(height: 16),
+                            Text('Video 60 soniyaga qisqartirilmoqda...',
+                                style: TextStyle(color: Colors.white)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
 
-              // Fast trim first (no re-encode), fallback to re-encode for compatibility.
-              final trimCmd =
-                  '-y -ss 0 -i "$_uploadFilePath" -t 60 -c copy -movflags +faststart "$trimmedPath"';
-              bool success = await FFmpegRunner.execute(trimCmd);
-              if (!success) {
-                final fallbackTrimCmd =
-                    '-y -i "$_uploadFilePath" -t 60 -c:v libx264 -preset ultrafast -crf 26 -c:a aac -ar 44100 -ac 2 -b:a 128k -movflags +faststart "$trimmedPath"';
-                success = await FFmpegRunner.execute(fallbackTrimCmd);
-              }
+                // Trim video using FFmpeg
+                final tempDir = await getTemporaryDirectory();
+                final trimmedPath = p.join(tempDir.path,
+                    'trimmed_${DateTime.now().millisecondsSinceEpoch}.mp4');
 
-              if (!mounted) return;
-              final rootNav = Navigator.of(context, rootNavigator: true);
-              if (rootNav.canPop()) {
-                rootNav.pop(); // Dismiss loading dialog
-              }
+                // Fast trim first (no re-encode), fallback to re-encode for compatibility.
+                final trimCmd =
+                    '-y -ss 0 -i "$_uploadFilePath" -t 60 -c copy -movflags +faststart "$trimmedPath"';
+                bool success = await FFmpegRunner.execute(trimCmd);
+                if (!success) {
+                  final fallbackTrimCmd =
+                      '-y -i "$_uploadFilePath" -t 60 -c:v libx264 -preset ultrafast -crf 26 -c:a aac -ar 44100 -ac 2 -b:a 128k -movflags +faststart "$trimmedPath"';
+                  success = await FFmpegRunner.execute(fallbackTrimCmd);
+                }
 
-              if (success) {
-                _uploadFilePath = trimmedPath;
+                if (!mounted) return;
+                final rootNav = Navigator.of(context, rootNavigator: true);
+                if (rootNav.canPop()) {
+                  rootNav.pop(); // Dismiss loading dialog
+                }
+
+                if (success) {
+                  _uploadFilePath = trimmedPath;
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('Videoni qisqartirishda xatolik yuz berdi ❌'),
+                    backgroundColor: Colors.red,
+                  ));
+                  return;
+                }
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  content: Text('Videoni qisqartirishda xatolik yuz berdi ❌'),
-                  backgroundColor: Colors.red,
-                ));
+                // User refused to trim
                 return;
               }
-            } else {
-              // User refused to trim
-              return;
             }
           }
         }
+      } catch (e) {
+        secureLog('Error checking duration: $e');
       }
-    } catch (e) {
-      secureLog('Error checking duration: $e');
     }
 
     if (widget.isShorts) {
