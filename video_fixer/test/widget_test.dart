@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:video_fixer/main.dart';
 import 'package:video_fixer/services/settings_provider.dart';
 import 'package:video_fixer/services/video_processing_provider.dart';
+import 'package:video_fixer/services/upload_queue_service.dart';
 
 void main() {
   testWidgets('VideoFixer app renders root scaffold', (WidgetTester tester) async {
@@ -20,6 +21,7 @@ void main() {
         providers: [
           ChangeNotifierProvider(create: (_) => SettingsProvider()),
           ChangeNotifierProvider(create: (_) => VideoProcessingProvider()),
+          ChangeNotifierProvider.value(value: UploadQueueService.instance),
         ],
         child: const MaterialApp(
           home: MainTabScreen(),
