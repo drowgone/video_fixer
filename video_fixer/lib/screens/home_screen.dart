@@ -847,6 +847,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final statusText = provider.statusText;
     final inputPath = provider.selectedVideoPath;
 
+    int activeStep = 0;
+    if (statusText.toLowerCase().contains('tahlil')) {
+      activeStep = 0;
+    } else if (statusText.toLowerCase().contains('tayyorlanmoqda') ||
+        statusText.toLowerCase().contains('tekshirilmoqda') ||
+        statusText.toLowerCase().contains('konvertatsiya')) {
+      activeStep = 1;
+    } else if (statusText.toLowerCase().contains('saqlandi') ||
+        statusText.toLowerCase().contains('sifat')) {
+      activeStep = 2;
+    } else {
+      activeStep = 1;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -903,7 +917,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF0000)),
           ),
         ),
-        const SizedBox(height: 16),
+
+        // Processing Stepper (Analiz -> Konvertatsiya -> Saqlash)
+        ProcessingStepper(activeIndex: activeStep),
+
+        const SizedBox(height: 8),
 
         // Status text
         Container(
@@ -1158,6 +1176,135 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               style: TextStyle(color: Colors.white38, fontSize: 13)),
         ),
       ],
+    );
+  }
+}
+
+class ProcessingStepper extends StatelessWidget {
+  final int activeIndex; // 0 for Analiz, 1 for Konvertatsiya, 2 for Saqlash
+
+  const ProcessingStepper({super.key, required this.activeIndex});
+
+  @override
+  Widget build(BuildContext context) {
+    final stages = [
+      {'label': 'Analiz', 'icon': Icons.search},
+      {'label': 'Konvertatsiya', 'icon': Icons.autorenew},
+      {'label': 'Saqlash', 'icon': Icons.save_outlined},
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 18),
+      child: Row(
+        children: List.generate(stages.length * 2 - 1, (index) {
+          if (index.isOdd) {
+            // Divider/Line between steps
+            final stepIndex = index ~/ 2;
+            final isCompleted = stepIndex < activeIndex;
+            return Expanded(
+              child: Container(
+                height: 2,
+                color: isCompleted ? const Color(0xFF69F0AE) : const Color(0xFF2C2C2C),
+              ),
+            );
+          }
+
+          final stepIndex = index ~/ 2;
+          final isCompleted = stepIndex < activeIndex;
+          final isActive = stepIndex == activeIndex;
+
+          final Color color = isCompleted
+              ? const Color(0xFF69F0AE) // var(--green-accent)
+              : isActive
+                  ? const Color(0xFFFF0000) // var(--red-500)
+                  : Colors.white24; // var(--text-disabled)
+
+          final iconColor = isCompleted
+              ? const Color(0xFF69F0AE)
+              : isActive
+                  ? const Color(0xFFFF0000)
+                  : Colors.white24;
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isActive
+                      ? const Color(0xFFFF0000).withValues(alpha: 0.12)
+                      : isCompleted
+                          ? const Color(0xFF69F0AE).withValues(alpha: 0.14)
+                          : const Color(0xFF161616),
+                  border: Border.all(
+                    color: isActive
+                        ? const Color(0xFFFF0000).withValues(alpha: 0.5)
+                        : isCompleted
+                            ? const Color(0xFF69F0AE).withValues(alpha: 0.4)
+                            : Colors.white10,
+                    width: 1.5,
+                  ),
+                ),
+                child: Center(
+                  child: isCompleted
+                      ? const Icon(Icons.check, size: 18, color: Color(0xFF69F0AE))
+                      : isActive
+                          ? _SpinningIcon(icon: stages[stepIndex]['icon'] as IconData, color: iconColor)
+                          : Icon(stages[stepIndex]['icon'] as IconData, size: 18, color: iconColor),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                stages[stepIndex]['label'] as String,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 10,
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _SpinningIcon extends StatefulWidget {
+  final IconData icon;
+  final Color color;
+
+  const _SpinningIcon({required this.icon, required this.color});
+
+  @override
+  State<_SpinningIcon> createState() => _SpinningIconState();
+}
+
+class _SpinningIconState extends State<_SpinningIcon> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RotationTransition(
+      turns: _controller,
+      child: Icon(widget.icon, size: 18, color: widget.color),
     );
   }
 }

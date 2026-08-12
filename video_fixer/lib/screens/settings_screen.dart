@@ -660,6 +660,72 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Widget _buildGoogleConnectButton() {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF202124),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                elevation: 2,
+              ),
+              onPressed: _connectAccount,
+              icon: Image.asset(
+                'assets/google_logo.png',
+                width: 22,
+                height: 22,
+                errorBuilder: (c, e, s) => Container(
+                  width: 22,
+                  height: 22,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    'G',
+                    style: TextStyle(
+                      color: Color(0xFF4285F4),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              label: const Text(
+                'Google orqali ulash',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.lock_outline, size: 13, color: Colors.white24),
+              SizedBox(width: 4),
+              Text(
+                'Ulanish faqat yuklash uchun ishlatiladi',
+                style: TextStyle(color: Colors.white24, fontSize: 11),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -670,20 +736,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style:
                 TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         elevation: 0,
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _connectAccount,
-        backgroundColor: Colors.white,
-        icon: Image.asset(
-          'assets/google_logo.png',
-          width: 24,
-          height: 24,
-          errorBuilder: (c, e, s) =>
-              const Icon(Icons.g_mobiledata, color: Colors.blue, size: 32),
-        ),
-        label: const Text('Google orqali ulash',
-            style:
-                TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
       ),
       body: Consumer<SettingsProvider>(
         builder: (context, provider, child) {
@@ -703,130 +755,176 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-              if (provider.accounts.isEmpty)
+              if (provider.accounts.isEmpty) ...[
                 const Padding(
-                  padding: EdgeInsets.only(top: 16),
+                  padding: EdgeInsets.only(top: 24, bottom: 16),
                   child: Center(
                     child: Text(
-                      'Ulanishlar topilmadi.\nPastdagi tugmani bosing.',
+                      'Ulanishlar topilmadi.\nGoogle orqali kanalni ulashingiz mumkin.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white54, fontSize: 16),
+                      style: TextStyle(color: Colors.white54, fontSize: 15, height: 1.4),
                     ),
                   ),
-                )
-              else
+                ),
+                _buildGoogleConnectButton(),
+              ] else ...[
                 ...provider.accounts.map((account) {
                   return Card(
-                    color: const Color(0xFF1A1A1A),
-                    margin: const EdgeInsets.only(bottom: 12),
+                    color: const Color(0xFF161616),
+                    margin: const EdgeInsets.only(bottom: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
+                      borderRadius: BorderRadius.circular(20),
+                      side: const BorderSide(color: Colors.white10, width: 1),
+                    ),
                     child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        leading: CircleAvatar(
-                          radius: 24,
-                          backgroundColor: const Color(0xFF2A2A2A),
-                          backgroundImage: account.channelProfilePic != null
-                              ? NetworkImage(account.channelProfilePic!)
-                              : null,
-                          child: account.channelProfilePic == null
-                              ? const Icon(Icons.video_camera_front,
-                                  color: Colors.white)
-                              : null,
-                        ),
-                        title: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                account.name,
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14),
-                                overflow: TextOverflow.ellipsis,
+                      padding: const EdgeInsets.all(14.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 23,
+                                backgroundColor: const Color(0xFF2A2A2A),
+                                backgroundImage: account.channelProfilePic != null
+                                    ? NetworkImage(account.channelProfilePic!)
+                                    : null,
+                                child: account.channelProfilePic == null
+                                    ? const Icon(Icons.video_camera_front, color: Colors.white)
+                                    : null,
                               ),
-                            ),
-                            if (account.status == 'active')
-                              const Icon(Icons.check_circle,
-                                  color: Colors.greenAccent, size: 16)
-                            else if (account.status.startsWith('error'))
-                              const Icon(Icons.error,
-                                  color: Colors.redAccent, size: 16)
-                            else
-                              const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white54)),
-                          ],
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 4),
-                            Text(
-                              'Obunachilar: ${account.subscriberCount ?? "0"} • Videolar: ${account.videoCount ?? "0"}',
-                              style: const TextStyle(
-                                  color: Colors.white70, fontSize: 12),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'ID: ${account.channelId}',
-                              style: const TextStyle(
-                                  color: Colors.white30, fontSize: 10),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.settings,
-                                  color: Colors.white70, size: 20),
-                              onPressed: () =>
-                                  _showChannelSettingsDialog(account),
-                              tooltip: 'Default Sozlamalar',
-                            ),
-                            Checkbox(
-                              value: account.isActive,
-                              activeColor: const Color(0xFFFF0000),
-                              checkColor: Colors.white,
-                              onChanged: (val) {
-                                if (val != null) {
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            account.name,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        if (account.status == 'active')
+                                          const Icon(Icons.check_circle,
+                                              color: Color(0xFF69F0AE), size: 15)
+                                        else
+                                          Container(
+                                            width: 7,
+                                            height: 7,
+                                            decoration: const BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white24,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.group_outlined, color: Colors.white38, size: 14),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          account.subscriberCount ?? "0",
+                                          style: const TextStyle(color: Colors.white54, fontSize: 12),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        const Icon(Icons.smart_display_outlined, color: Colors.white38, size: 14),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          account.videoCount ?? "0",
+                                          style: const TextStyle(color: Colors.white54, fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Switch(
+                                value: account.isActive,
+                                activeThumbColor: const Color(0xFFFF0000),
+                                activeTrackColor: const Color(0xFFFF0000).withValues(alpha: 0.25),
+                                inactiveThumbColor: Colors.white30,
+                                inactiveTrackColor: const Color(0xFF2A2A2A),
+                                onChanged: (val) {
                                   provider.toggleAccountActive(account.id, val);
-                                }
-                              },
-                            ),
-                            PopupMenuButton<String>(
-                              icon: const Icon(Icons.more_vert,
-                                  color: Colors.white70, size: 20),
-                              color: const Color(0xFF2A2A2A),
-                              onSelected: (val) {
-                                if (val == 'delete') {
-                                  provider.deleteAccount(account.id);
-                                  YouTubeUploader.signOut();
-                                }
-                              },
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(
-                                    value: 'delete',
-                                    child: Text("Chiqish (O'chirish)",
-                                        style: TextStyle(
-                                            color: Colors.redAccent))),
-                              ],
-                            ),
-                          ],
-                        ),
+                                },
+                              ),
+                            ],
+                          ),
+                          const Divider(color: Colors.white10, height: 24),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: SizedBox(
+                                  height: 38,
+                                  child: OutlinedButton.icon(
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.white70,
+                                      side: const BorderSide(color: Colors.white10),
+                                      backgroundColor: const Color(0xFF222222),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    onPressed: () => _showChannelSettingsDialog(account),
+                                    icon: const Icon(Icons.tune, size: 16, color: Colors.white70),
+                                    label: const Text(
+                                      'Standart sozlamalar',
+                                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF222222),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: Colors.white10),
+                                ),
+                                child: PopupMenuButton<String>(
+                                  icon: const Icon(Icons.more_vert, color: Colors.white70, size: 20),
+                                  color: const Color(0xFF2A2A2A),
+                                  padding: EdgeInsets.zero,
+                                  onSelected: (val) {
+                                    if (val == 'delete') {
+                                      provider.deleteAccount(account.id);
+                                      YouTubeUploader.signOut();
+                                    }
+                                  },
+                                  itemBuilder: (context) => [
+                                    const PopupMenuItem(
+                                      value: 'delete',
+                                      child: Text(
+                                        "Chiqish (O'chirish)",
+                                        style: TextStyle(color: Colors.redAccent),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   );
                 }),
-              const SizedBox(height: 80),
+                const SizedBox(height: 8),
+                _buildGoogleConnectButton(),
+              ],
+              const SizedBox(height: 40),
             ],
           );
         },

@@ -367,10 +367,10 @@ class _HistoryScreenState extends State<HistoryScreen>
       if (_statusFilter == 'Uploaded' && state != 'uploaded') {
         return false;
       }
-      if (_statusFilter == 'Deleted' && state != 'deleted') {
+      if (_statusFilter == 'Deleted' && (state != 'deleted' && state != 'failed')) {
         return false;
       }
-      if (_statusFilter == 'Processing' && state != 'processing') {
+      if (_statusFilter == 'Processing' && (state != 'processing' && state != 'uploading' && state != 'queued')) {
         return false;
       }
       if (_statusFilter == 'NotUploaded' && state != 'not_uploaded') {
@@ -967,49 +967,87 @@ class _HistoryScreenState extends State<HistoryScreen>
   }
 
   Widget _buildStateBadge(String state, HistoryItem item) {
+    Color color;
+    String label;
+    bool pulse = false;
+
     switch (state) {
       case 'queued':
-        return _animatedChip('🔵 Navbatda', Colors.blueAccent);
+        color = const Color(0xFF448AFF); // blue-accent
+        label = 'Navbatda';
+        pulse = true;
+        break;
       case 'uploading':
-        return _animatedChip('🟠 Yuklanmoqda', Colors.orangeAccent);
+        color = const Color(0xFFFF8800); // orange-500
+        label = 'Yuklanmoqda';
+        pulse = true;
+        break;
       case 'failed':
-        return _chip('🔴 Xato', Colors.redAccent);
+        color = const Color(0xFFFF5252); // red-accent
+        label = 'Xato';
+        break;
       case 'processing':
-        return _chip('⏳ Jarayonda', Colors.orangeAccent);
+        color = const Color(0xFFFFAB40); // orange-accent
+        label = 'Jarayonda';
+        break;
       case 'uploaded':
-        return _chip('✅ Yuklangan', Colors.greenAccent);
+        color = const Color(0xFF69F0AE); // green-accent
+        label = 'Yuklangan';
+        break;
       case 'deleted':
-        return _chip('❌ O\'chirilgan', Colors.redAccent);
+        color = const Color(0xFFFF5252); // red-accent
+        label = "O'chirilgan";
+        break;
       default:
-        return _chip('📱 Qurilmada', Colors.white54);
+        color = Colors.white54;
+        label = 'Qurilmada';
+        break;
     }
-  }
 
-  Widget _animatedChip(String label, Color color) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.6, end: 1.0),
-      duration: const Duration(milliseconds: 800),
-      curve: Curves.easeInOut,
-      builder: (context, opacity, child) {
-        return Opacity(opacity: opacity, child: child);
-      },
-      onEnd: () {},
-      child: _chip(label, color),
-    );
-  }
-
-  Widget _chip(String label, Color color) {
-    return Container(
+    Widget chipContent = Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withValues(alpha: 0.5), width: 1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
       ),
-      child: Text(label,
-          style: TextStyle(
-              color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
+
+    if (pulse) {
+      return TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.4, end: 1.0),
+        duration: const Duration(milliseconds: 1000),
+        curve: Curves.easeInOut,
+        builder: (context, opacity, child) {
+          return Opacity(opacity: opacity, child: child);
+        },
+        child: chipContent,
+      );
+    }
+
+    return chipContent;
   }
 
   Future<void> _renameVideo(HistoryItem item) async {
@@ -1704,6 +1742,9 @@ class _HistoryScreenState extends State<HistoryScreen>
                 ),
               ),
 
+            // Segmented filter row
+            _buildSegmentedFilterRow(),
+
             // Filter Chips
             _buildFilterChips(),
 
@@ -2178,6 +2219,105 @@ class _HistoryScreenState extends State<HistoryScreen>
         children: chips,
       ),
     );
+  }
+
+  Widget _buildSegmentedFilterRow() {
+    final segments = [
+      {'value': 'All', 'label': 'Barchasi', 'color': const Color(0xFFFF0000), 'dot': false},
+      {'value': 'Uploaded', 'label': 'Yuklangan', 'color': const Color(0xFF69F0AE), 'dot': true},
+      {'value': 'NotUploaded', 'label': 'Qurilmada', 'color': Colors.white54, 'dot': true},
+      {'value': 'Processing', 'label': 'Jarayonda', 'color': const Color(0xFFFFAB40), 'dot': true},
+      {'value': 'Deleted', 'label': "O'chirilgan", 'color': const Color(0xFFFF5252), 'dot': true},
+    ];
+
+    return Container(
+      height: 50,
+      color: const Color(0xFF0F0F0F),
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: segments.map((seg) {
+            final String val = seg['value'] as String;
+            final String label = seg['label'] as String;
+            final Color color = seg['color'] as Color;
+            final bool hasDot = seg['dot'] as bool;
+
+            final isSelected = _statusFilter == val;
+
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    _statusFilter = val;
+                  });
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  height: 34,
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: isSelected ? color.withValues(alpha: 0.15) : const Color(0xFF161616),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSelected ? color.withValues(alpha: 0.55) : Colors.white10,
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (hasDot) ...[
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isSelected ? color : Colors.white24,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+                      Text(
+                        label,
+                        style: TextStyle(
+                          color: isSelected ? color : Colors.white70,
+                          fontSize: 12,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${_getSegmentCount(val)}',
+                        style: TextStyle(
+                          color: isSelected ? color : Colors.white30,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  int _getSegmentCount(String value) {
+    if (value == 'All') return _videos.length;
+    return _videos.where((item) {
+      final state = _getVideoState(item);
+      if (value == 'Uploaded') return state == 'uploaded';
+      if (value == 'NotUploaded') return state == 'not_uploaded';
+      if (value == 'Processing') return state == 'processing' || state == 'uploading' || state == 'queued';
+      if (value == 'Deleted') return state == 'deleted' || state == 'failed';
+      return false;
+    }).length;
   }
 
   void _openFilterBottomSheet() {
