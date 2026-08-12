@@ -1,0 +1,54 @@
+/* ============================================================
+   VideoFixer · Spacing, radii & layout
+   Spacing follows Flutter's 4px-ish rhythm but with the
+   in-between steps the app actually uses (6, 10, 14).
+   Screen gutters are a generous 24px. Corner radii climb in
+   a clear ladder: chips/insets 6–8 · controls 10–14 ·
+   cards/sheets 16–24 · pills & dots fully round.
+   ============================================================ */
+:root {
+  /* ---- Spacing scale -------------------------------------- */
+  --space-1:  2px;
+  --space-2:  4px;
+  --space-3:  6px;
+  --space-4:  8px;
+  --space-5:  10px;
+  --space-6:  12px;
+  --space-7:  14px;
+  --space-8:  16px;
+  --space-10: 20px;
+  --space-12: 24px;   /* standard screen gutter */
+  --space-14: 28px;
+  --space-16: 32px;
+  --space-20: 40px;
+
+  /* Semantic spacing */
+  --gutter-screen: var(--space-12);  /* 24 — horizontal screen padding */
+  --gap-card:      var(--space-8);   /* 16 — inner card padding base */
+  --gap-stack:     var(--space-6);   /* 12 — vertical rhythm between rows */
+
+  /* ---- Corner radii --------------------------------------- */
+  --radius-xs:   6px;   /* inset blocks, text-overlay boxes */
+  --radius-sm:   8px;   /* small thumbnails, progress bars, inset chips */
+  --radius-md:   10px;  /* compact buttons, time chips */
+  --radius-lg:   12px;  /* status containers, list tiles, inputs */
+  --radius-xl:   14px;  /* primary buttons, video thumbnails, sheets-tiles */
+  --radius-2xl:  16px;  /* form cards, dialogs, CTA buttons */
+  --radius-3xl:  20px;  /* bottom-sheet tops, chips/pills, FAB-rounded btns */
+  --radius-4xl:  24px;  /* hero state cards, large sheet tops */
+  --radius-pill: 999px; /* fully-round chips, dots, avatars */
+
+  /* ---- Control sizing ------------------------------------- */
+  --control-h-sm: 36px;  /* compact / icon buttons */
+  --control-h-md: 44px;  /* min touch target */
+  --control-h-lg: 50px;  /* standard primary button */
+  --control-h-xl: 54px;  /* hero CTA */
+
+  /* ---- Hit target ----------------------------------------- */
+  --touch-min: 44px;
+
+  /* ---- Edges / hairlines ---------------------------------- */
+  --border-w:        1px;
+  --border-w-strong: 1.5px;  /* state-card colored borders */
+  --border-w-active: 2px;    /* selected overlay outline */
+}

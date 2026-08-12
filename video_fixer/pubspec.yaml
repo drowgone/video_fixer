@@ -1,0 +1,82 @@
+name: video_fixer
+description: "YouTube uchun video audio muammosini hal qiluvchi dastur"
+publish_to: 'none'
+version: 1.0.0+2002
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # FFmpeg video qayta ishlash uchun
+
+  # Fayl tanlash uchun
+  file_picker: ^8.1.2
+
+  # Fayl yo'llarini olish uchun
+  path_provider: ^2.1.3
+
+  # Fayl nomi/yo'li manipulyatsiyasi uchun
+  path: ^1.9.0
+
+  # Permission so'rash uchun
+  permission_handler: ^11.3.1
+
+  # Ikonkalar uchun
+  cupertino_icons: ^1.0.8
+  ffmpeg_kit_flutter_new: ^4.1.0
+  share_plus: ^12.0.2
+  open_file: ^3.5.11
+  sqflite: ^2.4.2+1
+  flutter_secure_storage: ^10.2.0
+  googleapis: ^16.0.0
+  googleapis_auth: ^2.3.1
+  http: ^1.6.0
+  provider: ^6.1.5+1
+  url_launcher: ^6.3.2
+  uuid: ^4.5.3
+  google_sign_in: ^6.2.1
+  extension_google_sign_in_as_googleapis_auth: ^2.0.12
+  video_player: ^2.8.3
+  just_audio: ^0.9.36
+  google_fonts: ^6.1.0
+  flutter_colorpicker: ^1.0.3
+  workmanager: ^0.9.0
+  flutter_local_notifications: ^17.2.1
+  flutter_cache_manager: ^3.3.1
+  cached_network_image: ^3.4.1
+  connectivity_plus: ^6.0.3
+  shared_preferences: ^2.2.3
+  confetti: ^0.8.0
+  shimmer: ^3.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.4.0
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/logo.png"
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "assets/logo.png"
+
+flutter_native_splash:
+  color: "#000000"
+  image: "assets/logo.png"
+  android: true
+  ios: false
+  android_12:
+    image: "assets/logo.png"
+    icon_background_color: "#000000"
+    color: "#000000"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/logo.png

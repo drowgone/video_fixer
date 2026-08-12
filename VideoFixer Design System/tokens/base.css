@@ -1,0 +1,33 @@
+/* ============================================================
+   VideoFixer · Base
+   Minimal global resets + the dark canvas defaults every
+   surface inherits. Kept out of styles.css so that file can
+   stay a pure @import manifest.
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+  background: var(--surface-app);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* The app never relies on link-blue; inherit by default. */
+a { color: inherit; text-decoration: none; }
+
+button { font-family: inherit; }
+
+::selection { background: var(--red-25); color: #fff; }
+
+/* Thin dark scrollbars to match the near-black chrome. */
+* { scrollbar-width: thin; scrollbar-color: var(--white-12) transparent; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-thumb { background: var(--white-12); border-radius: var(--radius-pill); }
+*::-webkit-scrollbar-track { background: transparent; }

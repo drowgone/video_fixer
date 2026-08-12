@@ -1,0 +1,20 @@
+<!-- @dsCard group="Type" viewport="700x150" name="Monospace · Timecode" subtitle="Tabular numerals for timecodes, byte counts & upload speed" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 22px 24px; background: var(--surface-app); display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
+  .item { display: flex; flex-direction: column; gap: 6px; }
+  .val { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-primary); }
+  .cap { font-size: var(--text-2xs); color: var(--text-quaternary); }
+</style>
+</head>
+<body>
+  <div class="item"><span class="val" style="font-size:24px; font-weight:700">00:42 / 01:00</span><span class="cap">editor timecode · 14 bold</span></div>
+  <div class="item"><span class="val" style="font-size:16px; color:var(--red-500); font-weight:700">63.4%</span><span class="cap">upload progress</span></div>
+  <div class="item"><span class="val" style="font-size:13px; color:var(--text-tertiary)">18.2 MB / 28.6 MB</span><span class="cap">byte count · 13</span></div>
+  <div class="item"><span class="val" style="font-size:13px; color:var(--text-tertiary)">4.7 Mbps</span><span class="cap">speed</span></div>
+</body>
+</html>

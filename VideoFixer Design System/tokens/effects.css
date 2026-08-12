@@ -1,0 +1,72 @@
+/* ============================================================
+   VideoFixer · Effects — elevation, glows, motion, gradients
+   The app's signature lighting is the RED GLOW: a soft
+   #FF0000 halo behind the logo and beneath the live CTA,
+   often animated as a slow 1.5s pulse. Cards carry a faint
+   colored glow matching their state border. Motion is
+   confident easeInOutCubic with one springy easeOutBack on
+   the splash logo; presses scale to 0.95 with haptics.
+   ============================================================ */
+:root {
+  /* ---- Elevation / drop shadows --------------------------- */
+  --shadow-card:     0 8px 24px rgba(0,0,0,0.45);
+  --shadow-sheet:    0 -8px 32px rgba(0,0,0,0.55);
+  --shadow-thumb:    0 4px 10px rgba(0,0,0,0.40);
+  --shadow-nav:      0 -2px 12px rgba(0,0,0,0.54);
+
+  /* ---- Brand red glow (the hero halo) --------------------- */
+  --glow-red-sm:  0 0 12px 1px rgba(255,0,0,0.25);
+  --glow-red-md:  0 0 20px 2px rgba(255,0,0,0.35);   /* logo halo */
+  --glow-red-lg:  0 0 28px 4px rgba(255,0,0,0.45);   /* pulsing CTA peak */
+
+  /* ---- State glows (match the card's status border) ------- */
+  --glow-success: 0 0 20px 2px rgba(105,240,174,0.20);
+  --glow-warning: 0 0 20px 2px rgba(255,171,64,0.18);
+  --glow-signal:  0 0 8px 2px rgba(0,255,0,0.60);    /* processing dot */
+
+  /* ---- Focus ring ----------------------------------------- */
+  --focus-ring: 0 0 0 2px rgba(255,0,0,0.5);
+
+  /* ---- Gradients ------------------------------------------ */
+  /* Cinematic red CTA (Yuklash button): deep → pure red */
+  --grad-cta: linear-gradient(135deg, var(--red-600) 0%, var(--red-500) 100%); /* @kind other */
+  /* Thumbnail scrim — transparent → black, for caption legibility */
+  --grad-scrim: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.80) 100%); /* @kind other */
+  /* Shorts blur-pad background suggestion */
+  --grad-shorts: linear-gradient(180deg, #1A1A1A 0%, #000000 100%); /* @kind other */
+
+  /* ---- Motion · durations --------------------------------- */
+  --dur-press:  100ms;  /* @kind other */  /* ScaleButton down/up */
+  --dur-fast:   220ms;  /* @kind other */  /* tool-panel expand, chips */
+  --dur-base:   300ms;  /* @kind other */  /* page push (slide-up + scale) */
+  --dur-switch: 320ms;  /* @kind other */  /* state-card crossfade */
+  --dur-pulse:  1500ms; /* @kind other */  /* glow breathing loop */
+  --dur-splash: 700ms;  /* @kind other */  /* logo pop */
+
+  /* ---- Motion · easing ------------------------------------ */
+  --ease-standard: cubic-bezier(0.65, 0, 0.35, 1);   /* @kind other */  /* easeInOutCubic */
+  --ease-out:      cubic-bezier(0.33, 1, 0.68, 1); /* @kind other */
+  --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);/* @kind other */  /* easeOutBack (splash) */
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1); /* @kind other */
+}
+
+/* ---- Press affordance (the ScaleButton behaviour) -------- */
+.vf-pressable {
+  transition: transform var(--dur-press) var(--ease-standard);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.vf-pressable:active { transform: scale(0.95); }
+
+/* ---- The pulsing red glow loop --------------------------- */
+@keyframes vf-pulse-glow {
+  0%, 100% { box-shadow: var(--glow-red-sm); }
+  50%      { box-shadow: var(--glow-red-lg); }
+}
+.vf-pulse { animation: vf-pulse-glow var(--dur-pulse) var(--ease-standard) infinite; }
+
+/* ---- Processing signal dot (green, breathing) ------------ */
+@keyframes vf-signal {
+  0%, 100% { opacity: 0.4; box-shadow: 0 0 4px 1px rgba(0,255,0,0.4); }
+  50%      { opacity: 1;   box-shadow: var(--glow-signal); }
+}

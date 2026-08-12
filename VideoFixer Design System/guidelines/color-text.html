@@ -1,0 +1,26 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Text on Dark" subtitle="White at Flutter opacities — the only text ramp the app uses" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 20px 24px; background: var(--surface-card); }
+  .row { display: flex; flex-direction: column; gap: 9px; }
+  .line { display: flex; align-items: baseline; gap: 14px; }
+  .label { width: 200px; }
+  .tok { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--white-38); }
+  .demo { font-size: var(--text-md); font-weight: var(--weight-medium); }
+  .sub { font-size: var(--text-2xs); color: var(--white-38); margin-left: auto; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="line"><span class="demo" style="color:var(--white-100)">Primary — titles, values</span><span class="tok">--text-primary · #FFF</span></div>
+    <div class="line"><span class="demo" style="color:var(--white-70)">Secondary — body, subtitles</span><span class="tok">--text-secondary · 70%</span></div>
+    <div class="line"><span class="demo" style="color:var(--white-54)">Tertiary — captions, labels</span><span class="tok">--text-tertiary · 54%</span></div>
+    <div class="line"><span class="demo" style="color:var(--white-38)">Quaternary — hints, metadata</span><span class="tok">--text-quaternary · 38%</span></div>
+    <div class="line"><span class="demo" style="color:var(--white-30)">Disabled — inactive</span><span class="tok">--text-disabled · 30%</span></div>
+  </div>
+</body>
+</html>

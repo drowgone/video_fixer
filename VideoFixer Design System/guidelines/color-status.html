@@ -1,0 +1,32 @@
+<!-- @dsCard group="Colors" viewport="700x190" name="Status Accents" subtitle="Borrowed Material accents that signal upload, success, warning & layer type" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 22px 24px; background: var(--surface-app); }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 16px; }
+  .sw { display: flex; align-items: center; gap: 10px; }
+  .dot { width: 30px; height: 30px; border-radius: var(--radius-pill); flex: none; }
+  .meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .tok { font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--text-primary); }
+  .hex { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--text-tertiary); }
+  .use { font-size: var(--text-2xs); color: var(--text-quaternary); }
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="sw"><div class="dot" style="background:var(--green-spotify)"></div><div class="meta"><span class="tok">green-spotify</span><span class="hex">#1DB954</span><span class="use">upload / go-live</span></div></div>
+    <div class="sw"><div class="dot" style="background:var(--green-accent)"></div><div class="meta"><span class="tok">green-accent</span><span class="hex">#69F0AE</span><span class="use">success · ready</span></div></div>
+    <div class="sw"><div class="dot" style="background:var(--green-signal); box-shadow: var(--glow-signal)"></div><div class="meta"><span class="tok">green-signal</span><span class="hex">#00FF00</span><span class="use">processing dot</span></div></div>
+    <div class="sw"><div class="dot" style="background:var(--blue-accent)"></div><div class="meta"><span class="tok">blue-accent</span><span class="hex">#448AFF</span><span class="use">queue · links</span></div></div>
+    <div class="sw"><div class="dot" style="background:var(--orange-accent)"></div><div class="meta"><span class="tok">orange-accent</span><span class="hex">#FFAB40</span><span class="use">warning</span></div></div>
+    <div class="sw"><div class="dot" style="background:var(--orange-500)"></div><div class="meta"><span class="tok">orange-500</span><span class="hex">#FF8800</span><span class="use">retry / re-queue</span></div></div>
+    <div class="sw"><div class="dot" style="background:var(--amber)"></div><div class="meta"><span class="tok">amber</span><span class="hex">#FFC107</span><span class="use">energy / bolt</span></div></div>
+    <div class="sw"><div class="dot" style="background:var(--gold)"></div><div class="meta"><span class="tok">gold</span><span class="hex">#FFD700</span><span class="use">crop handles</span></div></div>
+    <div class="sw"><div class="dot" style="background:var(--purple-accent)"></div><div class="meta"><span class="tok">purple-accent</span><span class="hex">#E040FB</span><span class="use">open in editor</span></div></div>
+    <div class="sw"><div class="dot" style="background:var(--red-accent)"></div><div class="meta"><span class="tok">red-accent</span><span class="hex">#FF5252</span><span class="use">error · delete</span></div></div>
+  </div>
+</body>
+</html>

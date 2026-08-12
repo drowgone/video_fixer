@@ -1,0 +1,27 @@
+<!-- @dsCard group="Colors" viewport="700x180" name="Brand Red" subtitle="The single seed — YouTube red — and its cinematic siblings" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 22px 24px; background: var(--surface-app); }
+  .row { display: flex; gap: 14px; }
+  .sw { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  .chip { height: 76px; border-radius: var(--radius-lg); border: 1px solid var(--border-faint); }
+  .meta { display: flex; flex-direction: column; gap: 2px; }
+  .tok { font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--text-primary); }
+  .hex { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-tertiary); }
+  .use { font-size: var(--text-2xs); color: var(--text-quaternary); }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--red-700)"></div><div class="meta"><span class="tok">--red-700</span><span class="hex">#C50000</span><span class="use">pressed</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--red-600)"></div><div class="meta"><span class="tok">--red-600</span><span class="hex">#E50914</span><span class="use">CTA gradient start</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--red-500); box-shadow: var(--glow-red-md)"></div><div class="meta"><span class="tok">--red-500 ★</span><span class="hex">#FF0000</span><span class="use">PRIMARY / seed</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--red-400)"></div><div class="meta"><span class="tok">--red-400</span><span class="hex">#FF4444</span><span class="use">progress · Shorts</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--red-accent)"></div><div class="meta"><span class="tok">--red-accent</span><span class="hex">#FF5252</span><span class="use">error · destructive</span></div></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!-- @dsCard group="Colors" viewport="700x210" name="Surface Ink Ramp" subtitle="Near-black layered surfaces, darkest scaffold to lightest control" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 22px 24px; background: var(--surface-app-deep); }
+  .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .sw { display: flex; flex-direction: column; gap: 8px; }
+  .chip { height: 64px; border-radius: var(--radius-md); border: 1px solid var(--border-faint); }
+  .tok { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--text-secondary); }
+  .hex { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--text-quaternary); }
+  .use { font-size: var(--text-2xs); color: var(--text-quaternary); line-height: 1.3; }
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="sw"><div class="chip" style="background:var(--ink-900)"></div><span class="tok">ink-900</span><span class="hex">#000000</span><span class="use">black · video canvas</span></div>
+    <div class="sw"><div class="chip" style="background:var(--ink-850)"></div><span class="tok">ink-850</span><span class="hex">#0C0C0C</span><span class="use">editor scaffold</span></div>
+    <div class="sw"><div class="chip" style="background:var(--ink-800)"></div><span class="tok">ink-800</span><span class="hex">#0F0F0F</span><span class="use">app scaffold</span></div>
+    <div class="sw"><div class="chip" style="background:var(--ink-700)"></div><span class="tok">ink-700</span><span class="hex">#161616</span><span class="use">nav · tool panel</span></div>
+    <div class="sw"><div class="chip" style="background:var(--ink-650)"></div><span class="tok">ink-650</span><span class="hex">#1A1A1A</span><span class="use">cards · app bars</span></div>
+    <div class="sw"><div class="chip" style="background:var(--ink-600)"></div><span class="tok">ink-600</span><span class="hex">#1C1C1E</span><span class="use">iOS sheets</span></div>
+    <div class="sw"><div class="chip" style="background:var(--ink-550)"></div><span class="tok">ink-550</span><span class="hex">#1E1E1E</span><span class="use">dialogs · sheets</span></div>
+    <div class="sw"><div class="chip" style="background:var(--ink-500)"></div><span class="tok">ink-500</span><span class="hex">#222222</span><span class="use">play button</span></div>
+    <div class="sw"><div class="chip" style="background:var(--ink-450)"></div><span class="tok">ink-450</span><span class="hex">#2A2A2A</span><span class="use">2° btn · input fill</span></div>
+    <div class="sw"><div class="chip" style="background:var(--ink-400)"></div><span class="tok">ink-400</span><span class="hex">#2C2C2C</span><span class="use">2° btn alt</span></div>
+    <div class="sw"><div class="chip" style="background:var(--ink-350)"></div><span class="tok">ink-350</span><span class="hex">#2E2E2E</span><span class="use">drawer btn</span></div>
+    <div class="sw"><div class="chip" style="background:var(--surface-input); border-color: var(--border-strong)"></div><span class="tok">input</span><span class="hex">→ 450</span><span class="use">field surface</span></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,103 @@
+/* ============================================================
+   VideoFixer · Color tokens
+   A near-black, layered dark UI built on a single seed —
+   YouTube red (#FF0000). Material 3 dark scheme.
+   Colors split into: surface ink ramp · brand reds ·
+   status accents (Flutter Material accents) · text opacities,
+   then semantic aliases that the components consume.
+   ============================================================ */
+:root {
+  /* ---- Surface ink ramp (darkest → lightest) ---------------- */
+  --ink-900: #000000;   /* pure black — splash, system bars, video canvas */
+  --ink-850: #0C0C0C;   /* editor scaffold */
+  --ink-800: #0F0F0F;   /* primary app scaffold / deep surface */
+  --ink-750: #111111;   /* editor toolbar rail */
+  --ink-700: #161616;   /* bottom nav, editor tool panel */
+  --ink-650: #1A1A1A;   /* cards, app bars, sheets */
+  --ink-600: #1C1C1E;   /* iOS-style context sheets (cool-tinted) */
+  --ink-550: #1E1E1E;   /* dialogs, bottom sheets, form cards, snackbars */
+  --ink-500: #222222;   /* round play button, inset chips */
+  --ink-450: #2A2A2A;   /* secondary buttons, input fills, dropdowns */
+  --ink-400: #2C2C2C;   /* secondary button (alt) */
+  --ink-350: #2E2E2E;   /* drawer buttons */
+
+  /* ---- Brand red ------------------------------------------- */
+  --red-700: #C50000;   /* pressed / deep */
+  --red-600: #E50914;   /* gradient start (cinematic red) */
+  --red-500: #FF0000;   /* PRIMARY — YouTube red, the seed */
+  --red-400: #FF4444;   /* lighter red — progress text, Shorts glyphs */
+  --red-accent: #FF5252;/* Flutter redAccent — errors, destructive */
+
+  /* ---- Status accents (Flutter Material accents) ----------- */
+  --green-spotify: #1DB954; /* upload / "go live" CTA */
+  --green-accent:  #69F0AE; /* success states, "ready" */
+  --green-signal:  #00FF00; /* pulsing "processing" dot (pure, glows) */
+  --orange-accent: #FFAB40; /* warnings, in-progress */
+  --orange-500:    #FF8800; /* re-queue / retry */
+  --blue-accent:   #448AFF; /* queue count, links, info */
+  --amber:         #FFC107; /* the "bolt" / energy accent */
+  --amber-accent:  #FFD740; /* warning highlight */
+  --purple-accent: #E040FB; /* editor "open in editor" */
+  --gold:          #FFD700; /* editor crop-range handles */
+
+  /* ---- Text on dark (white at Flutter opacities) ----------- */
+  --white-100: #FFFFFF;
+  --white-70:  rgba(255,255,255,0.70);
+  --white-54:  rgba(255,255,255,0.54);
+  --white-38:  rgba(255,255,255,0.38);
+  --white-30:  rgba(255,255,255,0.30);
+  --white-24:  rgba(255,255,255,0.24);
+  --white-12:  rgba(255,255,255,0.12);
+  --white-10:  rgba(255,255,255,0.10);
+  --white-06:  rgba(255,255,255,0.06);
+  --white-04:  rgba(255,255,255,0.04);
+
+  /* ---- Translucent red wash (glows, active fills, halos) --- */
+  --red-06: rgba(255,0,0,0.06);
+  --red-12: rgba(255,0,0,0.12);
+  --red-15: rgba(255,0,0,0.15);
+  --red-25: rgba(255,0,0,0.25);
+  --red-35: rgba(255,0,0,0.35);
+
+  /* ============================================================
+     SEMANTIC ALIASES — components reference these, not raw scale
+     ============================================================ */
+  /* Surfaces */
+  --surface-app:      var(--ink-800);
+  --surface-app-deep: var(--ink-850);
+  --surface-card:     var(--ink-650);
+  --surface-sheet:    var(--ink-550);
+  --surface-sheet-ios:var(--ink-600);
+  --surface-elevated: var(--ink-700);
+  --surface-input:    var(--ink-450);
+  --surface-inset:    var(--ink-800);
+  --surface-nav:      var(--ink-700);
+
+  /* Brand / primary */
+  --primary:          var(--red-500);
+  --primary-pressed:  var(--red-700);
+  --primary-grad-from:var(--red-600);
+  --primary-grad-to:  var(--red-500);
+  --on-primary:       var(--white-100);
+
+  /* Text */
+  --text-primary:     var(--white-100);
+  --text-secondary:   var(--white-70);
+  --text-tertiary:    var(--white-54);
+  --text-quaternary:  var(--white-38);
+  --text-disabled:    var(--white-30);
+
+  /* Status / feedback */
+  --success:          var(--green-accent);
+  --success-solid:    var(--green-spotify);
+  --warning:          var(--orange-accent);
+  --error:            var(--red-accent);
+  --info:             var(--blue-accent);
+
+  /* Lines & borders */
+  --border-strong:    var(--white-24);
+  --border-default:   var(--white-12);
+  --border-faint:     var(--white-10);
+  --border-focus:     var(--red-500);
+  --divider:          var(--white-10);
+}
